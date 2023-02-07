@@ -15,7 +15,6 @@
 package errgo
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"runtime"
@@ -156,5 +155,5 @@ func (w *withStackError) MarshalJSON() ([]byte, error) {
 
 	b.WriteString("]}")
 
-	return bytes.Clone(b.B), nil
+	return append([]byte{}, b.Bytes()...), nil
 }
