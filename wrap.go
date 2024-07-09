@@ -13,9 +13,14 @@ type unwrap interface {
 	Unwrap() error
 }
 
+type Stack interface {
+	Stack() string
+}
+
 var _ unwrap = (*wrapError)(nil)
 var _ unwrap = (*msgError)(nil)
 var _ unwrap = (*withStackError)(nil)
+var _ Stack = (*withStackError)(nil)
 
 type wrapError struct {
 	err error
@@ -29,25 +34,6 @@ func (e *wrapError) Error() string {
 func (e *wrapError) Unwrap() error {
 	return e.err
 }
-
-// func (e *wrapError) Format(s fmt.State, v rune) {
-// 	switch v {
-// 	case 'v':
-// 		switch {
-// 		case s.Flag('+'):
-// 			fmt.Fprintf(s, "%s: %s", e.msg, e.err)
-// 			return
-// 		case s.Flag('#'):
-// 			fmt.Fprintf(s, "&wrapError{msg: %q, err: %#v}", e.msg, e.err)
-// 			return
-// 		}
-// 		fallthrough
-// 	case 's':
-// 		_, _ = io.WriteString(s, e.Error())
-// 	case 'q':
-// 		_, _ = io.WriteString(s, strconv.Quote(e.Error()))
-// 	}
-// }
 
 type msgError struct {
 	err error
@@ -64,7 +50,7 @@ func (e *msgError) Unwrap() error {
 
 type withStackError struct {
 	Err   error
-	Stack stack
+	stack stack
 }
 
 func (w *withStackError) Error() string {
@@ -82,14 +68,14 @@ func (w *withStackError) Format(s fmt.State, verb rune) {
 	case 'v':
 		// _, _ = io.WriteString(s, w.Error())
 		if s.Flag('#') {
-			fmt.Fprintf(s, "&errgo.withStackError{Err: %#v, Stack: ...}", w.Err)
+			fmt.Fprintf(s, "&errgo.withStackError{Err: %#v, stack: ...}", w.Err)
 			return
 		}
 
 		if s.Flag('+') {
 			_, _ = io.WriteString(s, w.Err.Error())
-			_, _ = io.WriteString(s, "\nerror stack:")
-			w.Stack.Format(s, verb)
+			s.Write([]byte("\nstack:\n"))
+			w.stack.Format(s, verb)
 			return
 		}
 		fallthrough
@@ -100,12 +86,16 @@ func (w *withStackError) Format(s fmt.State, verb rune) {
 	}
 }
 
+func (w *withStackError) Stack() string {
+	return fmt.Sprintf("%+v", w.stack)
+}
+
 // MarshalJSON marshal error with stack to
 //
 //	{
 //		"error": "context: real error",
 //		"stack": [
-//			"main.main  ...main.go:54",
+//			"main.main ...main.go:54",
 //			"..."
 //		]
 //	}
@@ -123,12 +113,12 @@ func (w *withStackError) MarshalJSON() ([]byte, error) {
 
 	b.WriteString(`"stack":[`)
 
-	frames := runtime.CallersFrames(w.Stack)
+	frames := runtime.CallersFrames(w.stack)
 	for {
 		frame, more := frames.Next()
 		b.WriteString(`"`)
 		b.WriteString(frame.Function)
-		b.WriteString("  ")
+		b.WriteString(" ")
 		b.WriteString(frame.File)
 		b.WriteString(":")
 		b.B = strconv.AppendInt(b.B, int64(frame.Line), 10)

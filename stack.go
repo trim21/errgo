@@ -5,27 +5,40 @@ import (
 	"io"
 	"runtime"
 	"strconv"
+	"strings"
 )
 
 // stack represents a stack of program counters.
 type stack []uintptr
 
+func (s stack) String() string {
+	st := &strings.Builder{}
+
+	s.writeTo(st)
+
+	return st.String()
+}
+
+func (s stack) writeTo(w io.Writer) {
+	frames := runtime.CallersFrames(s)
+
+	for {
+		frame, more := frames.Next()
+		_, _ = io.WriteString(w, frame.Function)
+		_, _ = io.WriteString(w, "\n\t")
+		_, _ = io.WriteString(w, frame.File)
+		_, _ = io.WriteString(w, ":")
+		_, _ = io.WriteString(w, strconv.Itoa(frame.Line))
+		if !more {
+			break
+		}
+		_, _ = io.WriteString(w, "\n")
+	}
+}
+
 func (s stack) Format(st fmt.State, verb rune) {
 	if verb == 'v' && st.Flag('+') {
-		frames := runtime.CallersFrames(s)
-
-		for {
-			frame, more := frames.Next()
-			_, _ = io.WriteString(st, "\n")
-			_, _ = io.WriteString(st, frame.Function)
-			_, _ = io.WriteString(st, "\n\t")
-			_, _ = io.WriteString(st, frame.File)
-			_, _ = io.WriteString(st, ":")
-			_, _ = io.WriteString(st, strconv.Itoa(frame.Line))
-			if !more {
-				break
-			}
-		}
+		s.writeTo(st)
 	}
 }
 

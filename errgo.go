@@ -6,15 +6,15 @@ func Wrap(err error, msg string) error {
 		return nil
 	}
 
-	if e, ok := err.(*withStackError); ok { //nolint:errorlint
-		// keep Stack
+	if e, ok := err.(*withStackError); ok {
+		// keep stack
 		return &withStackError{
 			Err:   &wrapError{msg: msg, err: e.Err},
-			Stack: e.Stack,
+			stack: e.stack,
 		}
 	}
 
-	return &withStackError{Err: &wrapError{msg: msg, err: err}, Stack: callers()}
+	return &withStackError{Err: &wrapError{msg: msg, err: err}, stack: callers()}
 }
 
 // Msg replace error message.
@@ -23,15 +23,15 @@ func Msg(err error, msg string) error {
 		return nil
 	}
 
-	if e, ok := err.(*withStackError); ok { //nolint:errorlint
+	if e, ok := err.(*withStackError); ok {
 		// keep traces
 		return &withStackError{
 			Err:   &msgError{msg: msg, err: e.Err},
-			Stack: e.Stack,
+			stack: e.stack,
 		}
 	}
 
-	return &withStackError{Err: &msgError{msg: msg, err: err}, Stack: callers()}
+	return &withStackError{Err: &msgError{msg: msg, err: err}, stack: callers()}
 }
 
 // MsgNoTrace replace error message without adding trace.
@@ -50,13 +50,13 @@ func Trace(err error) error {
 		return nil
 	}
 
-	if e, ok := err.(*withStackError); ok { //nolint:errorlint
-		// keep Stack
+	if e, ok := err.(*withStackError); ok {
+		// keep stack
 		return &withStackError{
 			Err:   e.Err,
-			Stack: e.Stack,
+			stack: e.stack,
 		}
 	}
 
-	return &withStackError{Err: err, Stack: callers()}
+	return &withStackError{Err: err, stack: callers()}
 }

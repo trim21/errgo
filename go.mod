@@ -3,6 +3,7 @@ module github.com/trim21/errgo
 go 1.18
 
 require (
+	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/stretchr/testify v1.9.0
 	github.com/valyala/bytebufferpool v1.0.0
 )
