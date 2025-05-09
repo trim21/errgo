@@ -72,13 +72,13 @@ func (w *withStackError) Format(s fmt.State, verb rune) {
 			return
 		}
 
+		_, _ = io.WriteString(s, "error: ")
+		_, _ = io.WriteString(s, w.Err.Error())
 		if s.Flag('+') {
-			_, _ = io.WriteString(s, w.Err.Error())
 			s.Write([]byte("\nstack:\n"))
 			w.stack.Format(s, verb)
 			return
 		}
-		fallthrough
 	case 's':
 		_, _ = io.WriteString(s, w.Error())
 	case 'q':

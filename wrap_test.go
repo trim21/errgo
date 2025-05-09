@@ -2,6 +2,7 @@
 package errgo_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -70,16 +71,19 @@ func TestMarshalJSON(t *testing.T) {
 
 	err := errWithTraceDepthEnough()
 
-	b, jerr := json.Marshal(err)
-	require.NoError(t, jerr)
-	cupaloy.SnapshotT(t, string(b))
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.SetIndent("", "  ")
+
+	require.NoError(t, enc.Encode(err))
+	cupaloy.SnapshotT(t, buf.String())
 
 	var m struct {
 		Error string   `json:"error"`
 		Stack []string `json:"stack"`
 	}
 
-	require.NoError(t, json.Unmarshal(b, &m))
+	require.NoError(t, json.Unmarshal(buf.Bytes(), &m))
 
 	require.True(t, strings.HasSuffix(err.Error(), "ctx 17: original error"))
 	require.NotZero(t, len(m.Stack), "stack should not be zero")

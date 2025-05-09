@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"runtime"
-	"strconv"
 	"strings"
 )
 
@@ -24,15 +23,10 @@ func (s stack) writeTo(w io.Writer) {
 
 	for {
 		frame, more := frames.Next()
-		_, _ = io.WriteString(w, frame.Function)
-		_, _ = io.WriteString(w, "\n\t")
-		_, _ = io.WriteString(w, frame.File)
-		_, _ = io.WriteString(w, ":")
-		_, _ = io.WriteString(w, strconv.Itoa(frame.Line))
+		_, _ = fmt.Fprintf(w, "  at %s (%s:%d)\n", frame.Function, frame.File, frame.Line)
 		if !more {
 			break
 		}
-		_, _ = io.WriteString(w, "\n")
 	}
 }
 
