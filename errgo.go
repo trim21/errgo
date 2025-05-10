@@ -9,12 +9,12 @@ func Wrap(err error, msg string) error {
 	if e, ok := err.(*withStackError); ok {
 		// keep stack
 		return &withStackError{
-			Err:   &wrapError{msg: msg, err: e.Err},
+			Err:   &wrapError{msg: msg + ": " + err.Error(), err: e.Err},
 			stack: e.stack,
 		}
 	}
 
-	return &withStackError{Err: &wrapError{msg: msg, err: err}, stack: callers()}
+	return &withStackError{Err: &wrapError{msg: msg + ": " + err.Error(), err: err}, stack: callers()}
 }
 
 // Msg replace error message.

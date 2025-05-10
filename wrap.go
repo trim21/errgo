@@ -27,9 +27,7 @@ type wrapError struct {
 	msg string
 }
 
-func (e *wrapError) Error() string {
-	return e.msg + ": " + e.err.Error()
-}
+func (e *wrapError) Error() string { return e.msg }
 
 func (e *wrapError) Unwrap() error {
 	return e.err
