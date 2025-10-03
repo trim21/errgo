@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/bradleyjkemp/cupaloy/v2 v2.8.0
 	github.com/rs/zerolog v1.34.0
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/valyala/bytebufferpool v1.0.0
 )
 
