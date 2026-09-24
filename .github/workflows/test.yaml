@@ -32,3 +32,9 @@ jobs:
       - uses: codecov/codecov-action@v7
         with:
           files: coverage.out
+
+  test-checks: # referenced in Mergify conditions, must stay unique across all workflows
+    needs: [test]
+    runs-on: ubuntu-slim
+    steps:
+      - run: echo "all test checks passed"
